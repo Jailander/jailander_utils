@@ -6,7 +6,11 @@ from datetime import datetime
 from datetime import timedelta
 import sys
 
-def load_file(inputfile) :
+
+
+def load_file(inputfile, epochs) :
+
+    print 'Creating Graphs between epochs :'+str(epochs)
 
     timfile = inputfile+'.tim'
     print "openning %s" %timfile
@@ -14,13 +18,15 @@ def load_file(inputfile) :
     print "Done"
 
     data_epoch = []
-    data_tim   = []
+    data_tim   = []    
 
     line = ftim.readline()
     while line:
         inf = line.split(' ',2)
-        data_epoch.append(int(inf[0]))
-        data_tim.append(float(inf[1]))
+        epochv = int(inf[0])
+        if epochv >= epochs[0] and epochv <= epochs[1] :
+            data_epoch.append(int(inf[0]))
+            data_tim.append(float(inf[1]))
         line = ftim.readline()
     ftim.close()
 
@@ -39,8 +45,10 @@ def load_file(inputfile) :
     line = ftim.readline()
     while line:
         inf = line.split(' ',2)
-        fdata_epoch.append(int(inf[0]))
-        fdata_tim.append(float(inf[1]))
+        epochv = int(inf[0])
+        if epochv >= epochs[0] and epochv <= epochs[1] :
+            fdata_epoch.append(int(inf[0]))
+            fdata_tim.append(float(inf[1]))
         line = ftim.readline()
     ftim.close()
    
@@ -60,8 +68,10 @@ def load_file(inputfile) :
     line = ftim.readline()
     while line:
         inf = line.split(' ',2)
-        trdata_epoch.append(int(inf[0]))
-        trdata_tim.append(int(inf[1]))
+        epochv = int(inf[0])
+        if epochv >= epochs[0] and epochv <= epochs[1] :
+            trdata_epoch.append(int(inf[0]))
+            trdata_tim.append(int(inf[1]))
         line = ftim.readline()
     ftim.close()
 
@@ -81,8 +91,10 @@ def load_file(inputfile) :
     line = ftim.readline()
     while line:
         inf = line.split(' ',2)
-        ftrdata_epoch.append(int(inf[0]))
-        ftrdata_tim.append(float(inf[1]))
+        epochv = int(inf[0])
+        if epochv >= epochs[0] and epochv <= epochs[1] :
+            ftrdata_epoch.append(int(inf[0]))
+            ftrdata_tim.append(float(inf[1]))
         line = ftim.readline()
     ftim.close()
    
@@ -144,7 +156,7 @@ def graph_edges(tdata, fdata, trdata, ftrdata, title):
         plt.plot([i, i], a, 'y--',  linewidth=0.5)
         
     for i in range(first_line,trdata[0][nnn-1], 86400) :
-        plt.plot([i, i], a, 'k--',  linewidth=0.05)
+        plt.plot([i, i], a, 'k--',  linewidth=0.2)
 
     #cc= ax.get_yaxis()
     #print cc.get_ylimit()
@@ -154,14 +166,20 @@ def graph_edges(tdata, fdata, trdata, ftrdata, title):
     #rects1 = ax.plot(fdata[0], fdata[1], color='b')
     plt.plot(fdata[0], fdata[1], color='b')
     
-    a = ax.get_ylim()
+    #a = ax.get_ylim()
     for i in range(firs_w_line,trdata[0][nnn-1], 604800) :
         plt.plot([i, i], a, 'g--',  linewidth=0.7)
     for i in range(firs_we_line,trdata[0][nnn-1], 604800) :
         plt.plot([i, i], a, 'y--',  linewidth=0.5)
     for i in range(first_line,trdata[0][nnn-1], 86400) :
-        plt.plot([i, i], a, 'k--',  linewidth=0.05)
+        plt.plot([i, i], a, 'k--',  linewidth=0.2)
     
+#    dates=[]
+#    for i in fdata[0]:
+#        dates.append(datetime.fromtimestamp(i).strftime("%Y-%m-%d"))
+#        
+#    ax.set_xticklabels(dates, rotation='vertical')
+    plt.ylim(a)
     title1 = title1+'.png'
     plt.savefig(title1)    
     
@@ -178,7 +196,7 @@ def graph_edges(tdata, fdata, trdata, ftrdata, title):
         plt.plot([i, i], [-0.1, 1.1], 'y--',  linewidth=0.5)
         
     for i in range(first_line,trdata[0][nnn-1], 86400) :
-        plt.plot([i, i],[-0.1, 1.1], 'k--',  linewidth=0.05)
+        plt.plot([i, i],[-0.1, 1.1], 'k--',  linewidth=0.2)
         
     plt.plot(trdata[0], trdata[1], 'r', trdata[0], trdata[1], 'bx')
     plt.ylim(-0.1, 1.1)
@@ -194,7 +212,7 @@ def graph_edges(tdata, fdata, trdata, ftrdata, title):
         plt.plot([i, i], [-0.1, 1.1], 'y--',  linewidth=0.5)
         
     for i in range(first_line,trdata[0][nnn-1], 86400) :
-        plt.plot([i, i], [-0.1, 1.1], 'k--',  linewidth=0.05)
+        plt.plot([i, i], [-0.1, 1.1], 'k--',  linewidth=0.2)
 
     plt.plot(ftrdata[0], ftrdata[1], color='b')    
     plt.ylim(-0.1, 1.1)
@@ -204,6 +222,17 @@ def graph_edges(tdata, fdata, trdata, ftrdata, title):
     #plt.show()
 
 
+def epoch_from_str(epochstr):
+    print 'epoch from : '+epochstr
+    if epochstr == '-1' :
+        iepoch = int(epochstr)
+    else :
+        dtepoch = datetime.strptime(epochstr, "%d-%m-%Y")
+        iepoch = int(dtepoch.strftime('%s'))
+    print dtepoch
+    print iepoch
+    return iepoch
+
 if __name__ == '__main__':
     if len(sys.argv) < 2 :
         print "usage: insert_map input_file.txt dataset_name map_name"
@@ -212,4 +241,22 @@ if __name__ == '__main__':
     filename=str(sys.argv[1])
     #dataset_name=str(sys.argv[2])
     #map_name=str(sys.argv[3])
-    load_file(filename)
+    epochs=[]
+
+    print "starting"
+    print len(sys.argv)
+
+    if len(sys.argv) >= 3 :
+        lepoch=epoch_from_str(str(sys.argv[2]))
+    else :
+        lepoch=0
+        
+    if len(sys.argv) >= 4 :
+        uepoch=epoch_from_str(str(sys.argv[3]))
+    else :
+        uepoch=epoch_from_str("31-12-2020")
+    
+    epochs.append(lepoch)
+    epochs.append(uepoch)
+    
+    load_file(filename, epochs)
